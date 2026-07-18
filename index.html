@@ -1,0 +1,196 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Gulf–India Monitor</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#10161a; --panel:#161d22; --panel2:#1c252b; --line:#26323a;
+  --ink:#dce5ec; --muted:#7f8c98; --faint:#54616c;
+  --blue:#4c90f0; --up:#3f9e6c; --down:#d1595f; --warn:#c78a3b;
+  --sans:'Inter',system-ui,sans-serif; --mono:'IBM Plex Mono',ui-monospace,monospace;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--ink);font-family:var(--sans);font-size:14px;
+  background-image:linear-gradient(var(--line) 1px,transparent 1px),linear-gradient(90deg,var(--line) 1px,transparent 1px);
+  background-size:120px 120px;background-position:-1px -1px}
+a{color:var(--ink);text-decoration:none}
+a:hover{color:var(--blue)}
+.lbl{font-family:var(--mono);font-size:10px;letter-spacing:.16em;color:var(--muted);text-transform:uppercase}
+
+/* ops bar */
+header{display:flex;flex-wrap:wrap;gap:16px;align-items:center;justify-content:space-between;
+  padding:14px 20px;border-bottom:1px solid var(--line);background:var(--panel)}
+.brand{display:flex;align-items:center;gap:12px}
+.mark{width:26px;height:26px;border:1px solid var(--blue);position:relative;flex:none}
+.mark::before{content:"";position:absolute;inset:5px;border:1px solid var(--blue);opacity:.5}
+h1{font-size:13px;font-weight:600;letter-spacing:.22em;text-transform:uppercase}
+.sub{font-family:var(--mono);font-size:10px;color:var(--faint);letter-spacing:.1em}
+.clocks{display:flex;gap:18px}
+.clock .t{font-family:var(--mono);font-size:14px}
+.hdr-right{display:flex;gap:14px;align-items:center}
+button{background:none;border:1px solid var(--blue);color:var(--blue);font-family:var(--mono);
+  font-size:11px;letter-spacing:.14em;padding:7px 16px;cursor:pointer;text-transform:uppercase}
+button:hover{background:var(--blue);color:var(--bg)}
+button:disabled{opacity:.4;cursor:default}
+.chip{font-family:var(--mono);font-size:10px;padding:2px 8px;border:1px solid var(--line);color:var(--muted)}
+.chip.ok{border-color:var(--up);color:var(--up)}
+.chip.stale{border-color:var(--warn);color:var(--warn)}
+.chip.cold{border-color:var(--down);color:var(--down)}
+
+/* layout */
+main{display:grid;grid-template-columns:2fr 1fr;gap:1px;background:var(--line);border-bottom:1px solid var(--line)}
+@media(max-width:960px){main{grid-template-columns:1fr}}
+section{background:var(--bg);padding:18px 20px;min-height:120px}
+.sec-head{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:14px}
+.sec-head .lbl{color:var(--blue)}
+
+/* tape */
+#tape{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:1px;background:var(--line)}
+.q{background:var(--panel);padding:10px 12px}
+.q .n{font-family:var(--mono);font-size:10px;letter-spacing:.12em;color:var(--muted)}
+.q .p{font-family:var(--mono);font-size:19px;margin:3px 0 1px}
+.q .c{font-family:var(--mono);font-size:11px}
+.q .u{font-family:var(--mono);font-size:9px;color:var(--faint)}
+.pos{color:var(--up)} .neg{color:var(--down)} .flat{color:var(--muted)}
+
+/* signals */
+.sig{display:flex;gap:12px;padding:9px 0;border-bottom:1px solid var(--line);align-items:baseline}
+.tag{flex:none;width:76px;font-family:var(--mono);font-size:9px;letter-spacing:.14em}
+.tag.critical{color:var(--down)} .tag.important{color:var(--warn)} .tag.monitor{color:var(--faint)}
+.sig .src{font-family:var(--mono);font-size:9px;color:var(--faint);margin-left:8px}
+
+/* catalysts */
+.cat{display:flex;gap:14px;padding:8px 0;border-bottom:1px solid var(--line)}
+.cat .w{flex:none;width:110px;font-family:var(--mono);font-size:10px;color:var(--blue)}
+.cat .watch{color:var(--muted);font-size:12px}
+
+.empty{font-family:var(--mono);font-size:11px;color:var(--faint);padding:12px 0}
+.err{font-family:var(--mono);font-size:10px;color:var(--down);margin-top:10px}
+footer{padding:12px 20px;display:flex;justify-content:space-between;flex-wrap:gap;gap:8px}
+footer .lbl{letter-spacing:.1em}
+kbd{font-family:var(--mono);border:1px solid var(--line);padding:0 5px;font-size:10px}
+</style>
+</head>
+<body>
+<header>
+  <div class="brand">
+    <div class="mark"></div>
+    <div>
+      <h1>Gulf–India Monitor</h1>
+      <div class="sub">CORRIDOR DECISION SUPPORT · SELF-HOSTED</div>
+    </div>
+  </div>
+  <div class="clocks">
+    <div class="clock"><div class="lbl">IST</div><div class="t" id="ck-ist">—</div></div>
+    <div class="clock"><div class="lbl">GST</div><div class="t" id="ck-gst">—</div></div>
+    <div class="clock"><div class="lbl">UTC</div><div class="t" id="ck-utc">—</div></div>
+  </div>
+  <div class="hdr-right">
+    <span class="chip" id="chip-tape">TAPE —</span>
+    <span class="chip" id="chip-news">NEWS —</span>
+    <button id="btn-refresh">Refresh</button>
+  </div>
+</header>
+
+<main>
+  <section style="grid-column:1/-1">
+    <div class="sec-head"><span class="lbl">Price tape</span><span class="lbl" id="tape-asof"></span></div>
+    <div id="tape"><div class="empty">Waiting for first fetch…</div></div>
+    <div class="err" id="tape-err"></div>
+  </section>
+
+  <section>
+    <div class="sec-head"><span class="lbl">Signals — corridor news</span><span class="lbl" id="news-asof"></span></div>
+    <div id="signals"><div class="empty">Waiting for first fetch…</div></div>
+    <div class="err" id="news-err"></div>
+  </section>
+
+  <section>
+    <div class="sec-head"><span class="lbl">Catalysts</span><span class="lbl">config.yml</span></div>
+    <div id="catalysts"><div class="empty">None configured.</div></div>
+    <div class="sec-head" style="margin-top:22px"><span class="lbl">Notes</span></div>
+    <div class="empty" style="line-height:1.7">
+      Prices: Yahoo Finance (delayed) with ECB fallback for FX. News: GDELT + RSS, priority
+      is rule-based from config.yml — no model guesses. Dubai/Oman assessments and Platts
+      cracks require licensed feeds and are intentionally absent rather than faked.
+    </div>
+  </section>
+</main>
+
+<footer>
+  <span class="lbl">Decision support, not investment advice · every item carries its source</span>
+  <span class="lbl"><kbd>R</kbd> refresh</span>
+</footer>
+
+<script>
+const $=id=>document.getElementById(id);
+const pad=n=>String(n).padStart(2,"0");
+function clock(tz){const d=new Date(new Date().toLocaleString("en-US",{timeZone:tz}));return pad(d.getHours())+":"+pad(d.getMinutes())+":"+pad(d.getSeconds());}
+setInterval(()=>{$("ck-ist").textContent=clock("Asia/Kolkata");$("ck-gst").textContent=clock("Asia/Dubai");$("ck-utc").textContent=clock("UTC");},1000);
+
+function cls(c){return c==null?"flat":c>0.001?"pos":c<-0.001?"neg":"flat";}
+function sign(c){return c==null?"—":(c>0?"+":"")+c.toFixed(2)+"%";}
+function esc(s){const d=document.createElement("div");d.textContent=s||"";return d.innerHTML;}
+
+function renderTape(t){
+  if(!t)return;
+  $("tape-asof").textContent=t.as_of||"";
+  const qs=t.quotes||[];
+  $("tape").innerHTML=qs.length?qs.map(q=>`
+    <div class="q"><div class="n">${esc(q.name)}</div>
+      <div class="p">${q.price!=null?q.price.toLocaleString():"—"}</div>
+      <div class="c ${cls(q.chg_pct)}">${sign(q.chg_pct)}</div>
+      <div class="u">${esc(q.unit)} · ${esc(q.source)}</div></div>`).join("")
+    :'<div class="empty">No verified quotes returned.</div>';
+  $("tape-err").textContent=(t.errors&&t.errors.length)?("Failed: "+t.errors.map(e=>e.symbol||e).join(", ")):"";
+}
+
+function renderNews(n){
+  if(!n)return;
+  $("news-asof").textContent=n.as_of||"";
+  const items=n.items||[];
+  $("signals").innerHTML=items.length?items.slice(0,18).map(i=>`
+    <div class="sig"><span class="tag ${i.priority}">${i.priority.toUpperCase()}</span>
+      <span><a href="${esc(i.url)}" target="_blank" rel="noopener">${esc(i.title)}</a>
+      <span class="src">${esc(i.source)}</span></span></div>`).join("")
+    :'<div class="empty">No items matched the corridor query.</div>';
+  $("news-err").textContent=(n.errors&&n.errors.length)?n.errors.join(" · "):"";
+}
+
+function renderCatalysts(cs){
+  if(!cs||!cs.length)return;
+  $("catalysts").innerHTML=cs.map(c=>`
+    <div class="cat"><span class="w">${esc(c.when)}</span>
+      <span>${esc(c.what)}<div class="watch">${esc(c.watch)}</div></span></div>`).join("");
+}
+
+async function health(){
+  try{const h=await(await fetch("/api/health")).json();
+    for(const k of["tape","news"]){const el=$("chip-"+k);el.className="chip "+h[k];el.textContent=k.toUpperCase()+" "+h[k].toUpperCase();}
+  }catch(e){}
+}
+
+async function load(){
+  try{
+    const d=await(await fetch("/api/all")).json();
+    renderTape(d.tape);renderNews(d.news);renderCatalysts(d.catalysts);health();
+  }catch(e){$("tape-err").textContent="Backend unreachable: "+e.message;}
+}
+
+async function refresh(){
+  const b=$("btn-refresh");b.disabled=true;b.textContent="Refreshing…";
+  try{await fetch("/api/refresh",{method:"POST"});await load();}
+  catch(e){$("tape-err").textContent="Refresh failed: "+e.message;}
+  b.disabled=false;b.textContent="Refresh";
+}
+
+$("btn-refresh").addEventListener("click",refresh);
+document.addEventListener("keydown",e=>{if(e.key==="r"&&!e.metaKey&&!e.ctrlKey)refresh();});
+load();setInterval(load,60000);
+</script>
+</body>
+</html>

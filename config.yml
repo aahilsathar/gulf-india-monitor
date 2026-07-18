@@ -1,0 +1,38 @@
+# Gulf-India Monitor — configuration
+# Edit this file, then restart the service (or POST /api/refresh).
+
+refresh_minutes:
+  tape: 5
+  news: 15
+
+# Price tape. Yahoo Finance symbols (free, ~15min delayed on futures).
+tape:
+  - { symbol: "BZ=F",     name: "BRENT",    unit: "$/bbl" }
+  - { symbol: "CL=F",     name: "WTI",      unit: "$/bbl" }
+  - { symbol: "NG=F",     name: "HH GAS",   unit: "$/mmbtu" }
+  - { symbol: "INR=X",    name: "USD/INR",  unit: "" }
+  - { symbol: "DX-Y.NYB", name: "DXY",      unit: "" }
+  - { symbol: "^NSEI",    name: "NIFTY 50", unit: "" }
+  - { symbol: "^TNX",     name: "US 10Y",   unit: "%", divide: 1 }
+  - { symbol: "GC=F",     name: "GOLD",     unit: "$/oz" }
+
+# GDELT full-text query for the corridor (free, no key).
+gdelt_query: '(India OR Hormuz OR OPEC OR "Red Sea" OR Gulf OR UAE OR Saudi) (crude OR oil OR LNG OR refinery OR tanker OR sanctions OR freight)'
+
+# Extra RSS feeds (free). Add or remove as you like.
+rss_feeds:
+  - https://oilprice.com/rss/main
+  - https://news.google.com/rss/search?q=india+crude+imports&hl=en-IN&gl=IN&ceid=IN:en
+  - https://news.google.com/rss/search?q=strait+of+hormuz+OR+red+sea+shipping&hl=en&gl=US&ceid=US:en
+
+# Rule-based priority tagging (transparent, no AI guessing).
+priority_rules:
+  critical: [hormuz, "red sea", attack, strike, missile, seiz, sanction, embargo, blockade]
+  important: [opec, outage, shutdown, maintenance, freight, tanker, refinery, export ban, windfall]
+
+# Upcoming catalysts — maintain by hand; shown verbatim on the dashboard.
+catalysts:
+  - { when: "Check monthly", what: "OPEC+ meeting", watch: "Quota decisions vs. compliance" }
+  - { when: "Wed (US)",      what: "EIA weekly inventories", watch: "Crude + product draws" }
+  - { when: "Aug (RBI cal)", what: "RBI MPC decision", watch: "INR path, rate guidance" }
+  - { when: "Oct 2026",      what: "India CCTS compliance market opens", watch: "First CCC price prints" }
