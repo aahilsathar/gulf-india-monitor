@@ -5,84 +5,138 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Gulf–India Monitor</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&family=Roboto+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
 :root{
-  --bg:#10161a; --panel:#161d22; --panel2:#1c252b; --line:#26323a;
-  --ink:#dce5ec; --muted:#7f8c98; --faint:#54616c;
-  --blue:#4c90f0; --up:#3f9e6c; --down:#d1595f; --warn:#c78a3b;
-  --sans:'Inter',system-ui,sans-serif; --mono:'IBM Plex Mono',ui-monospace,monospace;
+  --bg:#131316; --card:#1b1c1f; --card2:#232428; --line:#2e2f33;
+  --ink:#e8eaed; --muted:#9aa0a6; --faint:#5f6368;
+  --blue:#8ab4f8; --green:#81c995; --red:#f28b82; --amber:#fdd663;
+  --sans:'Roboto',system-ui,sans-serif; --mono:'Roboto Mono',ui-monospace,monospace;
+  --r:12px;
 }
 *{box-sizing:border-box;margin:0;padding:0}
-body{background:var(--bg);color:var(--ink);font-family:var(--sans);font-size:14px;
-  background-image:linear-gradient(var(--line) 1px,transparent 1px),linear-gradient(90deg,var(--line) 1px,transparent 1px);
-  background-size:120px 120px;background-position:-1px -1px}
+body{background:var(--bg);color:var(--ink);font-family:var(--sans);font-size:14px;line-height:1.5}
 a{color:var(--ink);text-decoration:none}
 a:hover{color:var(--blue)}
-.lbl{font-family:var(--mono);font-size:10px;letter-spacing:.16em;color:var(--muted);text-transform:uppercase}
+.k{font-family:var(--mono)}
+.lbl{font-size:11px;font-weight:500;letter-spacing:.08em;color:var(--muted);text-transform:uppercase}
 
-/* ops bar */
-header{display:flex;flex-wrap:wrap;gap:16px;align-items:center;justify-content:space-between;
-  padding:14px 20px;border-bottom:1px solid var(--line);background:var(--panel)}
+header{position:sticky;top:0;z-index:5;background:rgba(19,19,22,.92);backdrop-filter:blur(8px);
+  border-bottom:1px solid var(--line);padding:12px 24px;display:flex;flex-wrap:wrap;gap:14px;align-items:center;justify-content:space-between}
 .brand{display:flex;align-items:center;gap:12px}
-.mark{width:26px;height:26px;border:1px solid var(--blue);position:relative;flex:none}
-.mark::before{content:"";position:absolute;inset:5px;border:1px solid var(--blue);opacity:.5}
-h1{font-size:13px;font-weight:600;letter-spacing:.22em;text-transform:uppercase}
-.sub{font-family:var(--mono);font-size:10px;color:var(--faint);letter-spacing:.1em}
-.clocks{display:flex;gap:18px}
-.clock .t{font-family:var(--mono);font-size:14px}
-.hdr-right{display:flex;gap:14px;align-items:center}
-button{background:none;border:1px solid var(--blue);color:var(--blue);font-family:var(--mono);
-  font-size:11px;letter-spacing:.14em;padding:7px 16px;cursor:pointer;text-transform:uppercase}
-button:hover{background:var(--blue);color:var(--bg)}
-button:disabled{opacity:.4;cursor:default}
-.chip{font-family:var(--mono);font-size:10px;padding:2px 8px;border:1px solid var(--line);color:var(--muted)}
-.chip.ok{border-color:var(--up);color:var(--up)}
-.chip.stale{border-color:var(--warn);color:var(--warn)}
-.chip.cold{border-color:var(--down);color:var(--down)}
+.dot4{display:grid;grid-template-columns:8px 8px;gap:3px}
+.dot4 i{width:8px;height:8px;border-radius:50%}
+.dot4 i:nth-child(1){background:var(--blue)}.dot4 i:nth-child(2){background:var(--red)}
+.dot4 i:nth-child(3){background:var(--amber)}.dot4 i:nth-child(4){background:var(--green)}
+h1{font-size:16px;font-weight:500}
+.sub{font-size:11px;color:var(--faint)}
+.clocks{display:flex;gap:16px}
+.clock{text-align:center}.clock .t{font-family:var(--mono);font-size:13px}
+.hdr-right{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.chip{font-size:11px;padding:3px 10px;border-radius:999px;border:1px solid var(--line);color:var(--muted)}
+.chip.ok{border-color:transparent;background:rgba(129,201,149,.14);color:var(--green)}
+.chip.stale{border-color:transparent;background:rgba(253,214,99,.14);color:var(--amber)}
+.chip.cold{border-color:transparent;background:rgba(242,139,130,.14);color:var(--red)}
+button{background:var(--blue);color:#131316;border:none;border-radius:999px;font-family:var(--sans);
+  font-size:13px;font-weight:500;padding:8px 18px;cursor:pointer}
+button:hover{filter:brightness(1.08)} button:disabled{opacity:.5;cursor:default}
+.ghost{background:none;border:1px solid var(--line);color:var(--muted)}
+.ghost.on{border-color:var(--blue);color:var(--blue)}
 
-/* layout */
-main{display:grid;grid-template-columns:2fr 1fr;gap:1px;background:var(--line);border-bottom:1px solid var(--line)}
-@media(max-width:960px){main{grid-template-columns:1fr}}
-section{background:var(--bg);padding:18px 20px;min-height:120px}
-.sec-head{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:14px}
-.sec-head .lbl{color:var(--blue)}
+.wrap{max-width:1280px;margin:0 auto;padding:20px 24px 48px;display:flex;flex-direction:column;gap:18px}
+
+/* today's read */
+#read{background:linear-gradient(120deg,rgba(138,180,248,.12),rgba(129,201,149,.06));
+  border:1px solid var(--line);border-radius:var(--r);padding:18px 20px}
+#read .lbl{color:var(--blue);margin-bottom:6px}
+#read p{font-size:16px;line-height:1.55}
+#read .hint{margin-top:8px}
+
+.hint{display:none;font-size:12px;color:var(--muted);background:var(--card2);
+  border-left:3px solid var(--blue);border-radius:0 8px 8px 0;padding:8px 12px}
+body.learn .hint{display:block}
+
+.grid{display:grid;grid-template-columns:2fr 1fr;gap:18px}
+@media(max-width:980px){.grid{grid-template-columns:1fr}}
+.card{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:18px 20px}
+.card-head{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:14px;gap:10px}
+.asof{font-size:11px;color:var(--faint)}
 
 /* tape */
-#tape{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:1px;background:var(--line)}
-.q{background:var(--panel);padding:10px 12px}
-.q .n{font-family:var(--mono);font-size:10px;letter-spacing:.12em;color:var(--muted)}
-.q .p{font-family:var(--mono);font-size:19px;margin:3px 0 1px}
-.q .c{font-family:var(--mono);font-size:11px}
-.q .u{font-family:var(--mono);font-size:9px;color:var(--faint)}
-.pos{color:var(--up)} .neg{color:var(--down)} .flat{color:var(--muted)}
+#tape{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px}
+.q{background:var(--card2);border-radius:10px;padding:12px 14px;display:flex;flex-direction:column;gap:2px}
+.q .n{font-size:11px;font-weight:500;color:var(--muted);letter-spacing:.06em}
+.q .row{display:flex;justify-content:space-between;align-items:baseline;gap:8px}
+.q .p{font-family:var(--mono);font-size:20px}
+.q .c{font-family:var(--mono);font-size:12px;font-weight:500;padding:1px 8px;border-radius:999px}
+.c.pos{background:rgba(129,201,149,.16);color:var(--green)}
+.c.neg{background:rgba(242,139,130,.16);color:var(--red)}
+.c.flat{color:var(--muted)}
+.q svg{width:100%;height:34px;margin-top:6px}
+.q .u{font-size:10px;color:var(--faint)}
+#spreads{display:flex;gap:10px;flex-wrap:wrap;margin-top:12px}
+.sp{background:var(--card2);border-radius:999px;padding:6px 14px;font-size:12px;color:var(--muted)}
+.sp b{font-family:var(--mono);color:var(--ink);font-weight:500}
 
 /* signals */
-.sig{display:flex;gap:12px;padding:9px 0;border-bottom:1px solid var(--line);align-items:baseline}
-.tag{flex:none;width:76px;font-family:var(--mono);font-size:9px;letter-spacing:.14em}
-.tag.critical{color:var(--down)} .tag.important{color:var(--warn)} .tag.monitor{color:var(--faint)}
-.sig .src{font-family:var(--mono);font-size:9px;color:var(--faint);margin-left:8px}
+.sig-crit{border-left:4px solid var(--red);background:var(--card2);border-radius:0 10px 10px 0;
+  padding:12px 14px;margin-bottom:10px}
+.sig-crit .t{font-weight:500}
+.badge{display:inline-block;font-size:10px;font-weight:700;letter-spacing:.08em;border-radius:4px;
+  padding:1px 6px;margin-right:8px;vertical-align:1px}
+.badge.critical{background:var(--red);color:#131316}
+.badge.important{background:var(--amber);color:#131316}
+.impacts{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
+.imp{font-size:11px;color:var(--blue);background:rgba(138,180,248,.12);border-radius:999px;padding:2px 10px}
+.sig{display:flex;gap:10px;padding:8px 0;border-bottom:1px solid var(--line);align-items:baseline;font-size:13px}
+.sig:last-child{border-bottom:none}
+.src{font-size:11px;color:var(--faint);margin-left:6px}
+details{margin-top:12px}
+summary{cursor:pointer;font-size:12px;color:var(--muted);list-style:none}
+summary::before{content:"▸ "} details[open] summary::before{content:"▾ "}
 
-/* catalysts */
-.cat{display:flex;gap:14px;padding:8px 0;border-bottom:1px solid var(--line)}
-.cat .w{flex:none;width:110px;font-family:var(--mono);font-size:10px;color:var(--blue)}
+/* catalysts + glossary */
+.cat{display:flex;gap:14px;padding:9px 0;border-bottom:1px solid var(--line)}
+.cat:last-child{border-bottom:none}
+.cat .w{flex:none;width:110px;font-family:var(--mono);font-size:11px;color:var(--blue)}
 .cat .watch{color:var(--muted);font-size:12px}
-
-.empty{font-family:var(--mono);font-size:11px;color:var(--faint);padding:12px 0}
-.err{font-family:var(--mono);font-size:10px;color:var(--down);margin-top:10px}
-footer{padding:12px 20px;display:flex;justify-content:space-between;flex-wrap:gap;gap:8px}
-footer .lbl{letter-spacing:.1em}
-kbd{font-family:var(--mono);border:1px solid var(--line);padding:0 5px;font-size:10px}
+.gl{padding:8px 0;border-bottom:1px solid var(--line);font-size:13px}
+.gl:last-child{border-bottom:none}
+.gl b{color:var(--blue);font-weight:500}
+.empty{font-size:12px;color:var(--faint);padding:10px 0}
+.err{font-size:11px;color:var(--red);margin-top:10px}
+.stat{font-size:11px;color:var(--muted);font-family:var(--mono);margin-top:4px}
+.sig2{color:var(--amber);font-weight:700}
+.jform{display:flex;flex-direction:column;gap:8px;margin-bottom:14px}
+.jform input,.jform textarea,.jclose input{background:var(--card2);border:1px solid var(--line);border-radius:8px;
+  color:var(--ink);font-family:var(--sans);font-size:13px;padding:9px 12px;width:100%}
+.jform textarea{resize:vertical}
+.jrow{display:flex;gap:8px;flex-wrap:wrap}
+.jrow input{flex:1;min-width:180px}
+.jitem{border:1px solid var(--line);border-radius:10px;padding:12px 14px;margin-bottom:10px}
+.jtop{display:flex;gap:10px;align-items:baseline;flex-wrap:wrap}
+.jstat{font-size:10px;font-weight:700;letter-spacing:.08em;border-radius:4px;padding:1px 6px}
+.jstat.open{background:rgba(129,201,149,.18);color:var(--green)}
+.jstat.closed{background:var(--card2);color:var(--muted)}
+.jview{font-size:13px;margin-top:6px}
+.jinval{font-size:12px;color:var(--amber);margin-top:4px}
+.jsnaps{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}
+.jsnap{font-family:var(--mono);font-size:11px;color:var(--muted);background:var(--card2);border-radius:999px;padding:2px 10px}
+.jsnap b.jp{color:var(--green)} .jsnap b.jn{color:var(--red)}
+.jclose{margin-top:8px}
+.jclose input{margin-top:6px}
+.jclose button{margin-top:8px}
+.jdone{font-size:12px;color:var(--muted);margin-top:8px}
+footer{max-width:1280px;margin:0 auto;padding:0 24px 32px;font-size:11px;color:var(--faint);
+  display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap}
+kbd{font-family:var(--mono);border:1px solid var(--line);border-radius:4px;padding:0 5px;font-size:10px}
 </style>
 </head>
 <body>
 <header>
   <div class="brand">
-    <div class="mark"></div>
-    <div>
-      <h1>Gulf–India Monitor</h1>
-      <div class="sub">CORRIDOR DECISION SUPPORT · SELF-HOSTED</div>
-    </div>
+    <div class="dot4"><i></i><i></i><i></i><i></i></div>
+    <div><h1>Gulf–India Monitor</h1><div class="sub">Corridor decision support · self-hosted · free sources</div></div>
   </div>
   <div class="clocks">
     <div class="clock"><div class="lbl">IST</div><div class="t" id="ck-ist">—</div></div>
@@ -92,80 +146,161 @@ kbd{font-family:var(--mono);border:1px solid var(--line);padding:0 5px;font-size
   <div class="hdr-right">
     <span class="chip" id="chip-tape">TAPE —</span>
     <span class="chip" id="chip-news">NEWS —</span>
+    <button class="ghost" id="btn-learn">Learn mode</button>
     <button id="btn-refresh">Refresh</button>
   </div>
 </header>
 
-<main>
-  <section style="grid-column:1/-1">
-    <div class="sec-head"><span class="lbl">Price tape</span><span class="lbl" id="tape-asof"></span></div>
+<div class="wrap">
+  <div id="read">
+    <div class="lbl">Today's read</div>
+    <p id="read-text">Waiting for first data pull…</p>
+    <div class="hint">This line is composed automatically from the tape and the signal feed: biggest price move, plus the top critical headline. It is a summary of fetched facts, not a prediction.</div>
+  </div>
+
+  <div class="card">
+    <div class="card-head"><span class="lbl">Price tape</span><span class="asof" id="tape-asof"></span></div>
     <div id="tape"><div class="empty">Waiting for first fetch…</div></div>
+    <div id="spreads"></div>
+    <div class="hint">Sparklines show the last month of daily closes. The pill spread is calculated locally from the two tape prices — Brent minus WTI is the market's read on Atlantic vs US crude balance.</div>
     <div class="err" id="tape-err"></div>
-  </section>
+  </div>
 
-  <section>
-    <div class="sec-head"><span class="lbl">Signals — corridor news</span><span class="lbl" id="news-asof"></span></div>
-    <div id="signals"><div class="empty">Waiting for first fetch…</div></div>
-    <div class="err" id="news-err"></div>
-  </section>
-
-  <section>
-    <div class="sec-head"><span class="lbl">Catalysts</span><span class="lbl">config.yml</span></div>
-    <div id="catalysts"><div class="empty">None configured.</div></div>
-    <div class="sec-head" style="margin-top:22px"><span class="lbl">Notes</span></div>
-    <div class="empty" style="line-height:1.7">
-      Prices: Yahoo Finance (delayed) with ECB fallback for FX. News: GDELT + RSS, priority
-      is rule-based from config.yml — no model guesses. Dubai/Oman assessments and Platts
-      cracks require licensed feeds and are intentionally absent rather than faked.
+  <div class="grid">
+    <div class="card">
+      <div class="card-head"><span class="lbl">Signals</span><span class="asof" id="news-asof"></span></div>
+      <div id="sig-critical"></div>
+      <div id="sig-important"></div>
+      <details id="sig-monitor-wrap"><summary id="sig-monitor-sum">Background items</summary><div id="sig-monitor"></div></details>
+      <div class="hint">Priority is keyword-rule based (see config.yml), so you always know <i>why</i> something is red. Blue chips under a headline are the markets that kind of event usually hits — a starting checklist, not a conclusion.</div>
+      <div class="err" id="news-err"></div>
     </div>
-  </section>
-</main>
+
+    <div style="display:flex;flex-direction:column;gap:18px">
+      <div class="card">
+        <div class="card-head"><span class="lbl">Catalysts</span><span class="asof">config.yml</span></div>
+        <div id="catalysts"><div class="empty">None configured.</div></div>
+        <div class="hint">Maintained by hand on purpose — knowing what's scheduled is a discipline, not a feed.</div>
+      </div>
+      <div class="card">
+        <div class="card-head"><span class="lbl">Desk glossary</span></div>
+        <div id="glossary"><div class="empty">Turn on Learn mode.</div></div>
+      </div>
+      <div class="card">
+        <div class="card-head"><span class="lbl">Data honesty</span></div>
+        <div class="empty" style="line-height:1.7">Prices: Yahoo (delayed) + ECB fallback. News: GDELT + RSS. Failures show as errors — never invented numbers. Dubai/Oman assessments need licensed feeds and are deliberately absent.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-head"><span class="lbl">Thesis journal</span><span class="asof" id="j-count"></span></div>
+    <div class="jform">
+      <input id="j-title" placeholder="Title — e.g. Hormuz premium overpriced here">
+      <textarea id="j-view" rows="2" placeholder="Your view, in plain sentences"></textarea>
+      <div class="jrow">
+        <input id="j-inval" placeholder="Invalidation — what would prove you wrong">
+        <input id="j-horizon" placeholder="Horizon — e.g. 2 weeks">
+        <button id="j-add">Log thesis</button>
+      </div>
+    </div>
+    <div id="j-list"><div class="empty">No theses yet. Logging one snapshots the whole tape at that moment — a timestamp nobody can backdate.</div></div>
+    <div class="hint">Each entry stores the date and every tape price at creation, then tracks the move since. Closing asks what happened and what you learned. Six months of this is interview evidence no CV line can match.</div>
+  </div>
+</div>
 
 <footer>
-  <span class="lbl">Decision support, not investment advice · every item carries its source</span>
-  <span class="lbl"><kbd>R</kbd> refresh</span>
+  <span>Decision support, not investment advice · every item links to its source</span>
+  <span><kbd>R</kbd> refresh · <kbd>L</kbd> learn mode</span>
 </footer>
 
 <script>
 const $=id=>document.getElementById(id);
 const pad=n=>String(n).padStart(2,"0");
-function clock(tz){const d=new Date(new Date().toLocaleString("en-US",{timeZone:tz}));return pad(d.getHours())+":"+pad(d.getMinutes())+":"+pad(d.getSeconds());}
+function clock(tz){const d=new Date(new Date().toLocaleString("en-US",{timeZone:tz}));return pad(d.getHours())+":"+pad(d.getMinutes());}
 setInterval(()=>{$("ck-ist").textContent=clock("Asia/Kolkata");$("ck-gst").textContent=clock("Asia/Dubai");$("ck-utc").textContent=clock("UTC");},1000);
 
+function esc(s){const d=document.createElement("div");d.textContent=s||"";return d.innerHTML;}
 function cls(c){return c==null?"flat":c>0.001?"pos":c<-0.001?"neg":"flat";}
 function sign(c){return c==null?"—":(c>0?"+":"")+c.toFixed(2)+"%";}
-function esc(s){const d=document.createElement("div");d.textContent=s||"";return d.innerHTML;}
 
+function spark(vals,up){
+  if(!vals||vals.length<3)return"";
+  const w=180,h=34,min=Math.min(...vals),max=Math.max(...vals),rng=(max-min)||1;
+  const pts=vals.map((v,i)=>`${(i/(vals.length-1)*w).toFixed(1)},${(h-2-((v-min)/rng)*(h-6)).toFixed(1)}`).join(" ");
+  const col=up==null?"#9aa0a6":up?"#81c995":"#f28b82";
+  return `<svg viewBox="0 0 ${w} ${h}" preserveAspectRatio="none"><polyline points="${pts}" fill="none" stroke="${col}" stroke-width="1.6"/></svg>`;
+}
+
+let latestQuotes=[];
+function statline(q){
+  const s=q.stats||{};const bits=[];
+  if(s.sigma!=null){const big=Math.abs(s.sigma)>=2;bits.push(`<span class="${big?"sig2":""}">${s.sigma>0?"+":""}${s.sigma}\u03c3</span>`);}
+  if(s.vol20!=null)bits.push(`vol ${s.vol20}%`);
+  if(s.pct1y!=null)bits.push(`1y pct ${s.pct1y}`);
+  return bits.length?`<div class="stat">${bits.join(" \u00b7 ")}</div>`:"";
+}
 function renderTape(t){
   if(!t)return;
   $("tape-asof").textContent=t.as_of||"";
-  const qs=t.quotes||[];
+  const qs=t.quotes||[];latestQuotes=qs;
   $("tape").innerHTML=qs.length?qs.map(q=>`
     <div class="q"><div class="n">${esc(q.name)}</div>
-      <div class="p">${q.price!=null?q.price.toLocaleString():"—"}</div>
-      <div class="c ${cls(q.chg_pct)}">${sign(q.chg_pct)}</div>
+      <div class="row"><span class="p">${q.price!=null?q.price.toLocaleString():"—"}</span>
+        <span class="c ${cls(q.chg_pct)}">${sign(q.chg_pct)}</span></div>
+      ${spark(q.spark,q.chg_pct==null?null:q.chg_pct>0)}
+      ${statline(q)}
       <div class="u">${esc(q.unit)} · ${esc(q.source)}</div></div>`).join("")
     :'<div class="empty">No verified quotes returned.</div>';
   $("tape-err").textContent=(t.errors&&t.errors.length)?("Failed: "+t.errors.map(e=>e.symbol||e).join(", ")):"";
+}
+
+function renderSpreads(sp){
+  $("spreads").innerHTML=(sp||[]).map(s=>`<span class="sp" title="${esc(s.note)}">${esc(s.name)} <b>${s.value>0?"+":""}${s.value}</b> ${esc(s.unit)}</span>`).join("");
+}
+
+function sigRow(i,badge){
+  const imp=(i.impacts||[]).map(x=>`<span class="imp">${esc(x)}</span>`).join("");
+  if(badge==="critical")return`<div class="sig-crit"><div class="t"><span class="badge critical">READ NOW</span><a href="${esc(i.url)}" target="_blank" rel="noopener">${esc(i.title)}</a><span class="src">${esc(i.source)}</span></div>${imp?`<div class="impacts">${imp}</div>`:""}</div>`;
+  return`<div class="sig"><span><span class="badge important">WORTH KNOWING</span><a href="${esc(i.url)}" target="_blank" rel="noopener">${esc(i.title)}</a><span class="src">${esc(i.source)}</span>${imp?`<div class="impacts">${imp}</div>`:""}</span></div>`;
 }
 
 function renderNews(n){
   if(!n)return;
   $("news-asof").textContent=n.as_of||"";
   const items=n.items||[];
-  $("signals").innerHTML=items.length?items.slice(0,18).map(i=>`
-    <div class="sig"><span class="tag ${i.priority}">${i.priority.toUpperCase()}</span>
-      <span><a href="${esc(i.url)}" target="_blank" rel="noopener">${esc(i.title)}</a>
-      <span class="src">${esc(i.source)}</span></span></div>`).join("")
-    :'<div class="empty">No items matched the corridor query.</div>';
+  const crit=items.filter(i=>i.priority==="critical");
+  const imp=items.filter(i=>i.priority==="important");
+  const mon=items.filter(i=>i.priority==="monitor");
+  $("sig-critical").innerHTML=crit.length?crit.map(i=>sigRow(i,"critical")).join(""):'<div class="empty">Nothing critical right now — that is information too.</div>';
+  $("sig-important").innerHTML=imp.map(i=>sigRow(i,"important")).join("");
+  $("sig-monitor-sum").textContent=`Background items (${mon.length})`;
+  $("sig-monitor").innerHTML=mon.map(i=>`<div class="sig"><a href="${esc(i.url)}" target="_blank" rel="noopener">${esc(i.title)}</a><span class="src">${esc(i.source)}</span></div>`).join("");
   $("news-err").textContent=(n.errors&&n.errors.length)?n.errors.join(" · "):"";
+  return{crit,items};
+}
+
+function renderRead(tape,newsInfo){
+  const qs=(tape&&tape.quotes)||[];
+  let mover=null;
+  for(const q of qs)if(q.chg_pct!=null&&(!mover||Math.abs(q.chg_pct)>Math.abs(mover.chg_pct)))mover=q;
+  const parts=[];
+  if(mover){let x=`${mover.name} is ${mover.chg_pct>0?"up":"down"} ${Math.abs(mover.chg_pct).toFixed(1)}% — the biggest move on your tape.`;
+    const sg=mover.stats&&mover.stats.sigma;
+    if(sg!=null&&Math.abs(sg)>=2)x+=` That is a ${Math.abs(sg)}-sigma day — genuinely unusual.`;
+    parts.push(x);}
+  if(newsInfo&&newsInfo.crit.length)parts.push(`${newsInfo.crit.length} critical signal${newsInfo.crit.length>1?"s":""}, led by: “${newsInfo.crit[0].title}”.`);
+  else if(newsInfo)parts.push("No critical signals in the current feed.");
+  $("read-text").textContent=parts.join(" ")||"Data loaded — tape and signals below.";
 }
 
 function renderCatalysts(cs){
   if(!cs||!cs.length)return;
-  $("catalysts").innerHTML=cs.map(c=>`
-    <div class="cat"><span class="w">${esc(c.when)}</span>
-      <span>${esc(c.what)}<div class="watch">${esc(c.watch)}</div></span></div>`).join("");
+  $("catalysts").innerHTML=cs.map(c=>`<div class="cat"><span class="w">${esc(c.when)}</span><span>${esc(c.what)}<div class="watch">${esc(c.watch)}</div></span></div>`).join("");
+}
+function renderGlossary(g){
+  if(!g||!g.length)return;
+  $("glossary").innerHTML=g.map(x=>`<div class="gl"><b>${esc(x.term)}</b> — ${esc(x.plain)}</div>`).join("");
 }
 
 async function health(){
@@ -174,22 +309,70 @@ async function health(){
   }catch(e){}
 }
 
+async function loadJournal(){
+  try{const rows=await(await fetch("/api/theses")).json();renderJournal(rows);}catch(e){}
+}
+function renderJournal(rows){
+  const open=rows.filter(r=>r.status==="open").length;
+  $("j-count").textContent=rows.length?`${open} open \u00b7 ${rows.length} total`:"";
+  if(!rows.length)return;
+  $("j-list").innerHTML=rows.map(r=>{
+    const snaps=(r.snapshot||[]).slice(0,4).map(sn=>{
+      const cur=latestQuotes.find(q=>q.name===sn.name);
+      const d=(cur&&sn.price)?((cur.price/sn.price-1)*100):null;
+      return `<span class="jsnap">${esc(sn.name)} ${sn.price}${d==null?"":` \u2192 <b class="${d>=0?"jp":"jn"}">${d>0?"+":""}${d.toFixed(1)}%</b>`}</span>`;
+    }).join("");
+    const closeUi=r.status==="open"
+      ?`<details class="jclose"><summary>Close thesis</summary>
+          <input id="j-out-${r.id}" placeholder="Outcome — what actually happened">
+          <input id="j-les-${r.id}" placeholder="Lesson">
+          <button onclick="closeThesis(${r.id})">Save & close</button></details>`
+      :`<div class="jdone">Closed ${esc(r.closed||"")}${r.outcome?` \u00b7 ${esc(r.outcome)}`:""}${r.lesson?` \u00b7 Lesson: ${esc(r.lesson)}`:""}</div>`;
+    return `<div class="jitem"><div class="jtop"><span class="jstat ${r.status}">${r.status.toUpperCase()}</span><b>${esc(r.title)}</b><span class="src">${esc(r.created)}</span></div>
+      <div class="jview">${esc(r.view)}</div>
+      ${r.invalidation?`<div class="jinval">Invalidation: ${esc(r.invalidation)}${r.horizon?` \u00b7 Horizon: ${esc(r.horizon)}`:""}</div>`:""}
+      <div class="jsnaps">${snaps}</div>${closeUi}</div>`;
+  }).join("");
+}
+async function addThesis(){
+  const t=$("j-title").value.trim();if(!t)return;
+  const b=$("j-add");b.disabled=true;
+  try{await fetch("/api/theses",{method:"POST",headers:{"Content-Type":"application/json"},
+    body:JSON.stringify({title:t,view:$("j-view").value,invalidation:$("j-inval").value,horizon:$("j-horizon").value})});
+    $("j-title").value=$("j-view").value=$("j-inval").value=$("j-horizon").value="";
+    await loadJournal();
+  }catch(e){}
+  b.disabled=false;
+}
+async function closeThesis(id){
+  try{await fetch(`/api/theses/${id}/close`,{method:"POST",headers:{"Content-Type":"application/json"},
+    body:JSON.stringify({outcome:document.getElementById("j-out-"+id).value,lesson:document.getElementById("j-les-"+id).value})});
+    await loadJournal();
+  }catch(e){}
+}
+window.closeThesis=closeThesis;
 async function load(){
   try{
     const d=await(await fetch("/api/all")).json();
-    renderTape(d.tape);renderNews(d.news);renderCatalysts(d.catalysts);health();
+    renderTape(d.tape);renderSpreads(d.spreads);
+    const ni=renderNews(d.news);
+    renderRead(d.tape,ni);renderCatalysts(d.catalysts);renderGlossary(d.glossary);health();loadJournal();
   }catch(e){$("tape-err").textContent="Backend unreachable: "+e.message;}
 }
-
 async function refresh(){
   const b=$("btn-refresh");b.disabled=true;b.textContent="Refreshing…";
   try{await fetch("/api/refresh",{method:"POST"});await load();}
   catch(e){$("tape-err").textContent="Refresh failed: "+e.message;}
   b.disabled=false;b.textContent="Refresh";
 }
-
+function toggleLearn(){document.body.classList.toggle("learn");$("btn-learn").classList.toggle("on");}
 $("btn-refresh").addEventListener("click",refresh);
-document.addEventListener("keydown",e=>{if(e.key==="r"&&!e.metaKey&&!e.ctrlKey)refresh();});
+$("btn-learn").addEventListener("click",toggleLearn);
+$("j-add").addEventListener("click",addThesis);
+document.addEventListener("keydown",e=>{
+  if(e.metaKey||e.ctrlKey)return;
+  if(e.key==="r")refresh(); if(e.key==="l")toggleLearn();
+});
 load();setInterval(load,60000);
 </script>
 </body>

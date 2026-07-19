@@ -1,6 +1,7 @@
 """Data connectors. Free sources only; every record carries its source and fetch time.
 Failures return errors, never invented values."""
 import asyncio
+import statistics
 import time
 from datetime import datetime, timezone
 
@@ -20,10 +21,25 @@ def _fetch_tape_sync(cfg: dict) -> dict:
     for item in cfg.get("tape", []):
         sym = item["symbol"]
         try:
-            fi = yf.Ticker(sym).fast_info
+            tk = yf.Ticker(sym)
+            fi = tk.fast_info
             last = fi["lastPrice"]
             prev = fi["previousClose"]
             chg = round((last / prev - 1) * 100, 2) if prev else None
+            spark: list[float] = []
+            stats: dict = {}
+            try:
+                closes = [float(x) for x in tk.history(period="1y", interval="1d")["Close"].dropna().tolist()]
+                spark = [round(c, 2) for c in closes[-22:]]
+                rets = [closes[i] / closes[i - 1] - 1 for i in range(1, len(closes))]
+                if len(rets) > 30:
+                    sd = statistics.pstdev(rets)
+                    if sd and chg is not None:
+                        stats["sigma"] = round((chg / 100) / sd, 1)
+                    stats["vol20"] = round(statistics.pstdev(rets[-20:]) * (252 ** 0.5) * 100, 1)
+                    stats["pct1y"] = round(100 * sum(1 for c in closes if c <= float(last)) / len(closes))
+            except Exception:  # noqa: BLE001 - analytics are optional; the quote still stands
+                pass
             quotes.append(
                 {
                     "name": item.get("name", sym),
@@ -31,6 +47,8 @@ def _fetch_tape_sync(cfg: dict) -> dict:
                     "price": round(float(last), 2),
                     "chg_pct": chg,
                     "unit": item.get("unit", ""),
+                    "spark": spark,
+                    "stats": stats,
                     "source": "Yahoo Finance (delayed)",
                 }
             )
@@ -145,8 +163,16 @@ async def fetch_news(cfg: dict) -> dict:
         errors.append(f"RSS: {str(exc)[:100]}")
 
     items = _dedupe(items)
+    imap = cfg.get("impact_map", {})
     for it in items:
         it["priority"] = _priority(it["title"], rules)
+        if it["priority"] in ("critical", "important"):
+            t = it["title"].lower()
+            impacts: list[str] = []
+            for kw, effects in imap.items():
+                if kw in t:
+                    impacts += [e for e in effects if e not in impacts]
+            it["impacts"] = impacts[:4]
     order = {"critical": 0, "important": 1, "monitor": 2}
     items.sort(key=lambda x: order[x["priority"]])
     return {"items": items[:30], "errors": errors, "as_of": _now()}

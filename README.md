@@ -1,7 +1,7 @@
 # Gulf–India Monitor
 
 Self-hosted market monitor for the Gulf–India energy corridor. One page, always live:
-price tape, corridor news ranked by transparent rules, and a hand-maintained catalyst list.
+price tape, corridor news ranked by transparent rules, a hand-maintained catalyst list, sparkline history, computed spreads, rule-based impact chips, and a Learn mode glossary.
 
 Design principles: free sources only, every record carries its source and fetch time,
 failures surface as errors — nothing is ever invented or faked.
@@ -97,3 +97,23 @@ priority keywords, catalysts. Edit and restart (or `curl -X POST localhost:8000/
 Spread panel (Brent–WTI, prompt spreads from the same free chain data), EIA weekly
 inventories (free API key), FRED macro series (free key), and a thesis journal with
 SQLite — in that order.
+
+## Put it on GitHub
+
+From your laptop, inside the project folder:
+
+```bash
+git init && git add . && git commit -m "Gulf-India Monitor"
+# create an empty repo named gulf-india-monitor at github.com/new, then:
+git remote add origin https://github.com/YOUR_USERNAME/gulf-india-monitor.git
+git branch -M main && git push -u origin main
+```
+
+Then future VPS updates become:
+
+```bash
+ssh root@YOUR_VPS "cd /opt/gim && git pull && systemctl restart gim"
+```
+
+(First time on the VPS: `cd /opt && rm -rf gim && git clone https://github.com/YOUR_USERNAME/gulf-india-monitor.git gim`
+then reinstall the venv as in the deploy section. Your `data/cache.json` is gitignored, so live cache is untouched by pulls.)

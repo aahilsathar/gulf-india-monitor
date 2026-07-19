@@ -36,3 +36,25 @@ catalysts:
   - { when: "Wed (US)",      what: "EIA weekly inventories", watch: "Crude + product draws" }
   - { when: "Aug (RBI cal)", what: "RBI MPC decision", watch: "INR path, rate guidance" }
   - { when: "Oct 2026",      what: "India CCTS compliance market opens", watch: "First CCC price prints" }
+
+# Keyword -> market impact chips shown on critical/important signals.
+impact_map:
+  hormuz: ["Freight & war-risk ↑", "Brent risk premium ↑", "India import bill ↑"]
+  blockade: ["Supply risk ↑", "Tanker availability ↓"]
+  "red sea": ["Suez reroute → freight ↑", "Asia–Europe delays"]
+  sanction: ["Russian crude discounts widen", "Compliance risk on flows"]
+  tanker: ["Freight rates reprice", "Insurance costs ↑"]
+  refinery: ["Product cracks move", "Regional supply shifts"]
+  opec: ["Supply quotas → flat price", "Watch compliance vs talk"]
+  lng: ["Spot LNG reprices", "Gas-linked power costs ↑"]
+  "export tax": ["Refiner margins captured by govt"]
+  freight: ["Arb windows open/close", "Shipping equities move"]
+
+# Plain-English glossary shown in Learn mode.
+glossary:
+  - { term: "Risk premium", plain: "Extra price paid for the chance supply gets disrupted — not for barrels actually lost yet." }
+  - { term: "Brent–WTI spread", plain: "Global oil price minus US oil price. Widens when US crude is trapped or the world is short." }
+  - { term: "Crack spread", plain: "A refiner's margin: product price minus crude cost. India's refiners live and die by this." }
+  - { term: "War-risk insurance", plain: "Premium to insure a ship through a conflict zone. In a crisis it can exceed the freight itself." }
+  - { term: "Contango", plain: "Future prices above today's — the market paying traders to store oil now and sell it later." }
+  - { term: "DXY", plain: "The dollar index. A stronger dollar usually pressures oil and EM currencies like INR." }
