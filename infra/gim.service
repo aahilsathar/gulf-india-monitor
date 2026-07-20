@@ -1,0 +1,12 @@
+[Unit]
+Description=STRAIT (Gulf-India market intelligence)
+After=network-online.target
+
+[Service]
+WorkingDirectory=/opt/gim
+ExecStart=/opt/gim/.venv/bin/uvicorn app.main:app --host 0.0.0.0 --port 8010
+Restart=always
+# Environment=EIA_API_KEY=put_free_key_here
+
+[Install]
+WantedBy=multi-user.target

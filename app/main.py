@@ -25,8 +25,11 @@ DATA_DIR.mkdir(exist_ok=True)
 CACHE_FILE = DATA_DIR / "cache.json"
 
 cfg = yaml.safe_load((ROOT / "config.yml").read_text())
-cache: dict = {"tape": None, "news": None}
-fetched_at: dict = {"tape": 0.0, "news": 0.0}
+KINDS = ("tape", "news", "cot", "wx", "eia")
+FETCHERS = {"tape": sources.fetch_tape, "news": sources.fetch_news,
+            "cot": sources.fetch_cot, "wx": sources.fetch_wx, "eia": sources.fetch_eia}
+cache: dict = {k: None for k in KINDS}
+fetched_at: dict = {k: 0.0 for k in KINDS}
 
 
 def _load_cache() -> None:
@@ -44,7 +47,7 @@ def _save_cache() -> None:
 
 
 async def _refresh(kind: str) -> None:
-    fn = sources.fetch_tape if kind == "tape" else sources.fetch_news
+    fn = FETCHERS[kind]
     try:
         cache[kind] = await fn(cfg)
         fetched_at[kind] = time.time()
@@ -59,10 +62,10 @@ async def _refresher() -> None:
     while True:
         now = time.time()
         jobs = []
-        if now - fetched_at["tape"] > cfg["refresh_minutes"]["tape"] * 60:
-            jobs.append(_refresh("tape"))
-        if now - fetched_at["news"] > cfg["refresh_minutes"]["news"] * 60:
-            jobs.append(_refresh("news"))
+        for kind in KINDS:
+            mins = cfg["refresh_minutes"].get(kind, 60)
+            if now - fetched_at[kind] > mins * 60:
+                jobs.append(_refresh(kind))
         if jobs:
             await asyncio.gather(*jobs)
         await asyncio.sleep(30)
@@ -112,19 +115,23 @@ def _spreads() -> list[dict]:
     """Derived indicators, computed from cached quotes. Labeled as calculations."""
     out = []
     quotes = {q["symbol"]: q for q in (cache["tape"] or {}).get("quotes", [])}
-    pairs = [("BZ=F", "CL=F", "BRENT – WTI", "$/bbl", "Atlantic vs US crude basis")]
-    for a, b, name, unit, note in pairs:
-        qa, qb = quotes.get(a), quotes.get(b)
-        if qa and qb and qa.get("price") is not None and qb.get("price") is not None:
-            out.append(
-                {
-                    "name": name,
-                    "value": round(qa["price"] - qb["price"], 2),
-                    "unit": unit,
-                    "note": note,
-                    "source": "calculated from tape",
-                }
-            )
+    def px(sym):
+        q = quotes.get(sym)
+        return q["price"] if q and q.get("price") is not None else None
+
+    bz, cl, ho, rb = px("BZ=F"), px("CL=F"), px("HO=F"), px("RB=F")
+    if bz is not None and cl is not None:
+        out.append({"name": "BRENT – WTI", "value": round(bz - cl, 2), "unit": "$/bbl",
+                    "note": "Atlantic vs US crude basis", "source": "calculated"})
+    if ho is not None and cl is not None:
+        out.append({"name": "DIESEL CRACK", "value": round(ho * 42 - cl, 2), "unit": "$/bbl",
+                    "note": "ULSD x42 minus WTI — the Indian refiner number", "source": "calculated"})
+    if rb is not None and cl is not None:
+        out.append({"name": "GASOLINE CRACK", "value": round(rb * 42 - cl, 2), "unit": "$/bbl",
+                    "note": "RBOB x42 minus WTI", "source": "calculated"})
+    if rb is not None and ho is not None and cl is not None:
+        out.append({"name": "3-2-1 CRACK", "value": round((2 * rb * 42 + ho * 42) / 3 - cl, 2),
+                    "unit": "$/bbl", "note": "Composite refining margin proxy", "source": "calculated"})
     return out
 
 
@@ -134,6 +141,9 @@ async def api_all():
         "tape": cache["tape"],
         "news": cache["news"],
         "spreads": _spreads(),
+        "cot": cache["cot"],
+        "wx": cache["wx"],
+        "eia": cache["eia"],
         "catalysts": cfg.get("catalysts", []),
         "glossary": cfg.get("glossary", []),
         "ages_sec": {"tape": _age("tape"), "news": _age("news")},
@@ -142,7 +152,7 @@ async def api_all():
 
 @app.post("/api/refresh")
 async def api_refresh():
-    await asyncio.gather(_refresh("tape"), _refresh("news"))
+    await asyncio.gather(*[_refresh(k) for k in KINDS])
     return {"ok": True, "ages_sec": {"tape": _age("tape"), "news": _age("news")}}
 
 

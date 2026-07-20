@@ -1,0 +1,96 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Aahil Sathar</title>
+<style>
+:root{--bg:#fafaf9;--ink:#111113;--mut:#8a8a8e;--hair:#e7e7e5;--grn:#1db954;--red:#e5484d;--amb:#b98900}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{background:var(--bg);color:var(--ink);
+  font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display","SF Pro Text","Segoe UI",Inter,sans-serif;
+  -webkit-font-smoothing:antialiased}
+a{color:inherit;text-decoration:none}
+.wrap{max-width:880px;margin:0 auto;padding:0 28px}
+
+header{display:flex;justify-content:space-between;align-items:center;padding:34px 0}
+header .name{font-size:15px;font-weight:600;letter-spacing:-.01em}
+header a.gh{font-size:14px;color:var(--mut)}
+header a.gh:hover{color:var(--ink)}
+
+.hero{padding:11vh 0 9vh}
+h1{font-size:clamp(46px,8.5vw,96px);font-weight:700;letter-spacing:-.045em;line-height:1.02}
+h1 .g{color:var(--mut)}
+.sub{margin-top:26px;font-size:17px;color:var(--mut);letter-spacing:-.01em}
+
+.list{border-top:1px solid var(--hair)}
+a.row{display:grid;grid-template-columns:56px 1fr auto;align-items:baseline;gap:20px;
+  padding:34px 0;border-bottom:1px solid var(--hair);transition:opacity .15s ease}
+.list:hover a.row{opacity:.45}
+.list a.row:hover{opacity:1}
+.row .n{font-size:13px;color:var(--mut);font-variant-numeric:tabular-nums}
+.row h2{font-size:clamp(22px,3.2vw,32px);font-weight:600;letter-spacing:-.025em;display:inline}
+.row .d{display:block;margin-top:7px;font-size:15px;color:var(--mut);letter-spacing:-.005em}
+.row .arrow{display:inline-block;margin-left:10px;color:var(--mut);opacity:0;transform:translateX(-4px);transition:.18s ease}
+.row:hover .arrow{opacity:1;transform:none}
+.st{font-size:13px;color:var(--mut);white-space:nowrap;font-variant-numeric:tabular-nums;display:flex;align-items:center;gap:8px}
+.st i{width:7px;height:7px;border-radius:50%;background:var(--mut);display:inline-block}
+.st.live i{background:var(--grn)} .st.down i{background:var(--red)} .st.plan i{background:var(--amb)}
+
+footer{padding:64px 0 72px;font-size:13px;color:var(--mut)}
+
+.fade{opacity:0;transform:translateY(14px);animation:in .7s cubic-bezier(.2,.7,.2,1) forwards}
+@keyframes in{to{opacity:1;transform:none}}
+.d1{animation-delay:.05s}.d2{animation-delay:.12s}.d3{animation-delay:.19s}.d4{animation-delay:.26s}.d5{animation-delay:.33s}
+@media (prefers-reduced-motion: reduce){.fade{animation:none;opacity:1;transform:none}}
+@media (max-width:640px){a.row{grid-template-columns:1fr auto}.row .n{display:none}}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header class="fade d1">
+  <span class="name">Aahil Sathar</span>
+  <a class="gh" href="https://github.com/aahilsathar" target="_blank" rel="noopener">GitHub</a>
+</header>
+
+<section class="hero">
+  <h1 class="fade d2">I build things<br><span class="g">that stay running.</span></h1>
+  <p class="sub fade d3">Live systems. Real data. Self-hosted. The dots are checking right now.</p>
+</section>
+
+<section class="list fade d4" id="list"></section>
+
+<footer class="fade d5">© 2026</footer>
+
+</div>
+
+<script>
+const SYSTEMS=[
+ {n:"01",name:"STRAIT",url:`http://${location.hostname}:8010`,ping:"/status/gim",
+  d:"Commodities intelligence. Fragmented data in, inference out."},
+ {n:"02",name:"GRYD",url:`http://${location.hostname}:8080`,ping:"/status/gryd",
+  d:"India's electricity, live."},
+ {n:"03",name:"CCTS Archive",url:null,ping:"planned",
+  d:"India's carbon market, recorded from the first trade."}
+];
+const list=document.getElementById("list");
+SYSTEMS.forEach((s,i)=>{
+  const a=document.createElement("a");a.className="row";
+  if(s.url){a.href=s.url;a.target="_blank";a.rel="noopener"}else{a.href="#";a.style.cursor="default"}
+  a.innerHTML=`<span class="n">${s.n}</span>
+    <span><h2>${s.name}</h2><span class="arrow">\u2197</span><span class="d">${s.d}</span></span>
+    <span class="st" id="st${i}"><i></i><span>${s.ping==="planned"?"Oct 2026":"—"}</span></span>`;
+  list.appendChild(a);
+  const el=()=>document.getElementById("st"+i);
+  if(s.ping==="planned"){el().className="st plan";return}
+  const t0=performance.now();
+  fetch(s.ping,{cache:"no-store"}).then(r=>{
+    const ms=Math.round(performance.now()-t0);
+    if(r.ok){el().className="st live";el().innerHTML=`<i></i><span>Live · ${ms}ms</span>`}
+    else{el().className="st down";el().innerHTML="<i></i><span>Down</span>"}
+  }).catch(()=>{el().className="st down";el().innerHTML="<i></i><span>Down</span>"});
+});
+</script>
+</body>
+</html>

@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Gulf–India Monitor</title>
+<title>STRAIT</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&family=Roboto+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
@@ -127,6 +127,15 @@ summary::before{content:"▸ "} details[open] summary::before{content:"▾ "}
 .jclose input{margin-top:6px}
 .jclose button{margin-top:8px}
 .jdone{font-size:12px;color:var(--muted);margin-top:8px}
+.tgroup{grid-column:1/-1;font-family:var(--mono);font-size:10px;letter-spacing:.2em;color:var(--faint);margin-top:6px}
+.lane{font-family:var(--mono);font-size:9px;letter-spacing:.08em;color:var(--faint);border:1px solid var(--line);border-radius:4px;padding:1px 6px;margin-left:8px;vertical-align:1px}
+.krow{display:flex;justify-content:space-between;align-items:baseline;padding:7px 0;border-bottom:1px solid var(--line);font-size:12px}
+.krow:last-child{border-bottom:none}
+.krow .kn{color:var(--muted)}
+.krow .kv{font-family:var(--mono);color:var(--ink)}
+.krow .kd{font-family:var(--mono);font-size:11px;margin-left:8px}
+.kd.pos{color:var(--green)} .kd.neg{color:var(--red)}
+.keynote{font-size:12px;color:var(--muted);line-height:1.6}
 footer{max-width:1280px;margin:0 auto;padding:0 24px 32px;font-size:11px;color:var(--faint);
   display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap}
 kbd{font-family:var(--mono);border:1px solid var(--line);border-radius:4px;padding:0 5px;font-size:10px}
@@ -136,7 +145,7 @@ kbd{font-family:var(--mono);border:1px solid var(--line);border-radius:4px;paddi
 <header>
   <div class="brand">
     <div class="dot4"><i></i><i></i><i></i><i></i></div>
-    <div><h1>Gulf–India Monitor</h1><div class="sub">Corridor decision support · self-hosted · free sources</div></div>
+    <div><h1>STRAIT</h1><div class="sub">Fragmented data in. Inference out. · self-hosted · free sources</div></div>
   </div>
   <div class="clocks">
     <div class="clock"><div class="lbl">IST</div><div class="t" id="ck-ist">—</div></div>
@@ -185,6 +194,20 @@ kbd{font-family:var(--mono);border:1px solid var(--line);border-radius:4px;paddi
       <div class="card">
         <div class="card-head"><span class="lbl">Desk glossary</span></div>
         <div id="glossary"><div class="empty">Turn on Learn mode.</div></div>
+      </div>
+      <div class="card">
+        <div class="card-head"><span class="lbl">Positioning — CFTC COT</span><span class="asof" id="cot-asof"></span></div>
+        <div id="cot-list"><div class="empty">Weekly futures positioning, straight from the regulator.</div></div>
+        <div class="hint">Net non-commercial (speculative) positions. Extreme net length is a crowded trade — fuel for reversals. Free, official, weekly.</div>
+      </div>
+      <div class="card">
+        <div class="card-head"><span class="lbl">Corridor conditions</span><span class="asof" id="wx-asof"></span></div>
+        <div id="wx-list"><div class="empty">Live weather at the chokepoints.</div></div>
+        <div class="hint">Hormuz/Fujairah wind affects tanker and bunkering ops; Mumbai and Delhi heat is a real-time power-demand proxy — the bridge to GRYD.</div>
+      </div>
+      <div class="card">
+        <div class="card-head"><span class="lbl">US inventories — EIA</span><span class="asof" id="eia-asof"></span></div>
+        <div id="eia-box" class="keynote">Loading…</div>
       </div>
       <div class="card">
         <div class="card-head"><span class="lbl">Data honesty</span></div>
@@ -244,13 +267,14 @@ function renderTape(t){
   if(!t)return;
   $("tape-asof").textContent=t.as_of||"";
   const qs=t.quotes||[];latestQuotes=qs;
-  $("tape").innerHTML=qs.length?qs.map(q=>`
+  const groups=[...new Set(qs.map(q=>q.group||"OTHER"))];
+  $("tape").innerHTML=qs.length?groups.map(g=>`<div class="tgroup">${esc(g)}</div>`+qs.filter(q=>(q.group||"OTHER")===g).map(q=>`
     <div class="q"><div class="n">${esc(q.name)}</div>
       <div class="row"><span class="p">${q.price!=null?q.price.toLocaleString():"—"}</span>
         <span class="c ${cls(q.chg_pct)}">${sign(q.chg_pct)}</span></div>
       ${spark(q.spark,q.chg_pct==null?null:q.chg_pct>0)}
       ${statline(q)}
-      <div class="u">${esc(q.unit)} · ${esc(q.source)}</div></div>`).join("")
+      <div class="u">${esc(q.unit)} · ${esc(q.source)}</div></div>`).join("")).join("")
     :'<div class="empty">No verified quotes returned.</div>';
   $("tape-err").textContent=(t.errors&&t.errors.length)?("Failed: "+t.errors.map(e=>e.symbol||e).join(", ")):"";
 }
@@ -261,8 +285,8 @@ function renderSpreads(sp){
 
 function sigRow(i,badge){
   const imp=(i.impacts||[]).map(x=>`<span class="imp">${esc(x)}</span>`).join("");
-  if(badge==="critical")return`<div class="sig-crit"><div class="t"><span class="badge critical">READ NOW</span><a href="${esc(i.url)}" target="_blank" rel="noopener">${esc(i.title)}</a><span class="src">${esc(i.source)}</span></div>${imp?`<div class="impacts">${imp}</div>`:""}</div>`;
-  return`<div class="sig"><span><span class="badge important">WORTH KNOWING</span><a href="${esc(i.url)}" target="_blank" rel="noopener">${esc(i.title)}</a><span class="src">${esc(i.source)}</span>${imp?`<div class="impacts">${imp}</div>`:""}</span></div>`;
+  if(badge==="critical")return`<div class="sig-crit"><div class="t"><span class="badge critical">READ NOW</span><a href="${esc(i.url)}" target="_blank" rel="noopener">${esc(i.title)}</a><span class="src">${esc(i.source)}</span><span class="lane">${esc(i.lane||"")}</span></div>${imp?`<div class="impacts">${imp}</div>`:""}</div>`;
+  return`<div class="sig"><span><span class="badge important">WORTH KNOWING</span><a href="${esc(i.url)}" target="_blank" rel="noopener">${esc(i.title)}</a><span class="src">${esc(i.source)}</span><span class="lane">${esc(i.lane||"")}</span>${imp?`<div class="impacts">${imp}</div>`:""}</span></div>`;
 }
 
 function renderNews(n){
@@ -303,6 +327,28 @@ function renderGlossary(g){
   $("glossary").innerHTML=g.map(x=>`<div class="gl"><b>${esc(x.term)}</b> — ${esc(x.plain)}</div>`).join("");
 }
 
+function renderCot(c){
+  if(!c)return;$("cot-asof").textContent=(c.rows&&c.rows.length)?("report "+(c.rows[0].date||"")):"";
+  const rows=c.rows||[];
+  if(rows.length)$("cot-list").innerHTML=rows.map(r=>{
+    const d=r.delta_wk;
+    return `<div class="krow"><span class="kn">${esc(r.market)}</span><span><span class="kv">${r.net.toLocaleString()}</span>${d==null?"":`<span class="kd ${d>=0?"pos":"neg"}">${d>0?"+":""}${d.toLocaleString()} wk</span>`}</span></div>`;
+  }).join("");
+  else if(c.errors&&c.errors.length)$("cot-list").innerHTML=`<div class="empty">Feed error — nothing shown. (${esc(c.errors[0].error||"")})</div>`;
+}
+function renderWx(w){
+  if(!w)return;$("wx-asof").textContent=w.as_of?"":"";
+  const rows=w.rows||[];
+  if(rows.length)$("wx-list").innerHTML=rows.map(r=>`<div class="krow"><span class="kn">${esc(r.name)} <span class="lane">${esc(r.tag)}</span></span><span class="kv">${r.temp_c!=null?r.temp_c+"°C":"—"} · ${r.wind_kmh!=null?r.wind_kmh+" km/h":"—"}</span></div>`).join("");
+}
+function renderEia(e){
+  if(!e)return;$("eia-asof").textContent=e.period||"";
+  const b=$("eia-box");
+  if(e.status==="ok"){const d=e.weekly_change_kbbl;
+    b.innerHTML=`US crude stocks <span class="kv">${(e.us_crude_stocks_kbbl/1000).toFixed(1)}M bbl</span>${d==null?"":` <span class="kd ${d<=0?"pos":"neg"}">${d>0?"+":""}${(d/1000).toFixed(1)}M wk</span>`} — draws are bullish, builds bearish.`;}
+  else if(e.status==="key_needed"){b.textContent="Needs a free EIA key: register at eia.gov/opendata, then set EIA_API_KEY on the server. Shown honestly as absent until then.";}
+  else{b.textContent="EIA feed error — nothing shown.";}
+}
 async function health(){
   try{const h=await(await fetch("/api/health")).json();
     for(const k of["tape","news"]){const el=$("chip-"+k);el.className="chip "+h[k];el.textContent=k.toUpperCase()+" "+h[k].toUpperCase();}
@@ -356,7 +402,7 @@ async function load(){
     const d=await(await fetch("/api/all")).json();
     renderTape(d.tape);renderSpreads(d.spreads);
     const ni=renderNews(d.news);
-    renderRead(d.tape,ni);renderCatalysts(d.catalysts);renderGlossary(d.glossary);health();loadJournal();
+    renderRead(d.tape,ni);renderCatalysts(d.catalysts);renderGlossary(d.glossary);renderCot(d.cot);renderWx(d.wx);renderEia(d.eia);health();loadJournal();
   }catch(e){$("tape-err").textContent="Backend unreachable: "+e.message;}
 }
 async function refresh(){

@@ -1,43 +1,48 @@
-# Gulf-India Monitor — configuration
-# Edit this file, then restart the service (or POST /api/refresh).
+# STRAIT — configuration. Edit, commit, git pull on server, restart.
 
 refresh_minutes:
   tape: 5
   news: 15
+  cot: 720      # CFTC positioning updates weekly; check twice daily
+  wx: 60
+  eia: 360
 
-# Price tape. Yahoo Finance symbols (free, ~15min delayed on futures).
+# Price tape — Yahoo Finance symbols, grouped. (free, ~15min delayed)
 tape:
-  - { symbol: "BZ=F",     name: "BRENT",    unit: "$/bbl" }
-  - { symbol: "CL=F",     name: "WTI",      unit: "$/bbl" }
-  - { symbol: "NG=F",     name: "HH GAS",   unit: "$/mmbtu" }
-  - { symbol: "INR=X",    name: "USD/INR",  unit: "" }
-  - { symbol: "DX-Y.NYB", name: "DXY",      unit: "" }
-  - { symbol: "^NSEI",    name: "NIFTY 50", unit: "" }
-  - { symbol: "^TNX",     name: "US 10Y",   unit: "%", divide: 1 }
-  - { symbol: "GC=F",     name: "GOLD",     unit: "$/oz" }
+  - { symbol: "BZ=F",     name: "BRENT",     unit: "$/bbl",   group: "ENERGY" }
+  - { symbol: "CL=F",     name: "WTI",       unit: "$/bbl",   group: "ENERGY" }
+  - { symbol: "HO=F",     name: "ULSD",      unit: "$/gal",   group: "ENERGY" }
+  - { symbol: "RB=F",     name: "RBOB",      unit: "$/gal",   group: "ENERGY" }
+  - { symbol: "NG=F",     name: "HH GAS",    unit: "$/mmbtu", group: "ENERGY" }
+  - { symbol: "INR=X",    name: "USD/INR",   unit: "",        group: "MACRO & FX" }
+  - { symbol: "DX-Y.NYB", name: "DXY",       unit: "",        group: "MACRO & FX" }
+  - { symbol: "^TNX",     name: "US 10Y",    unit: "%",       group: "MACRO & FX" }
+  - { symbol: "GC=F",     name: "GOLD",      unit: "$/oz",    group: "MACRO & FX" }
+  - { symbol: "^NSEI",    name: "NIFTY 50",  unit: "",        group: "MACRO & FX" }
+  - { symbol: "FRO",      name: "FRONTLINE", unit: "$",       group: "FREIGHT PROXIES" }
+  - { symbol: "STNG",     name: "SCORPIO",   unit: "$",       group: "FREIGHT PROXIES" }
+  - { symbol: "DHT",      name: "DHT VLCC",  unit: "$",       group: "FREIGHT PROXIES" }
+  - { symbol: "RELIANCE.NS", name: "RELIANCE", unit: "₹",     group: "INDIA ENERGY" }
+  - { symbol: "IOC.NS",      name: "IOC",      unit: "₹",     group: "INDIA ENERGY" }
+  - { symbol: "ONGC.NS",     name: "ONGC",     unit: "₹",     group: "INDIA ENERGY" }
 
-# GDELT full-text query for the corridor (free, no key).
+# GDELT full-text query (free, no key)
 gdelt_query: '(India OR Hormuz OR OPEC OR "Red Sea" OR Gulf OR UAE OR Saudi) (crude OR oil OR LNG OR refinery OR tanker OR sanctions OR freight)'
 
-# Extra RSS feeds (free). Add or remove as you like.
+# News lanes — every item is tagged with its lane on the dashboard.
 rss_feeds:
-  - https://oilprice.com/rss/main
-  - https://news.google.com/rss/search?q=india+crude+imports&hl=en-IN&gl=IN&ceid=IN:en
-  - https://news.google.com/rss/search?q=strait+of+hormuz+OR+red+sea+shipping&hl=en&gl=US&ceid=US:en
+  - { url: "https://oilprice.com/rss/main", lane: "ENERGY" }
+  - { url: "https://gcaptain.com/feed/", lane: "MARITIME" }
+  - { url: "https://splash247.com/feed/", lane: "MARITIME" }
+  - { url: "https://news.google.com/rss/search?q=india+crude+imports+refinery&hl=en-IN&gl=IN&ceid=IN:en", lane: "INDIA ENERGY" }
+  - { url: "https://news.google.com/rss/search?q=tanker+freight+rates+OR+VLCC&hl=en&gl=US&ceid=US:en", lane: "FREIGHT" }
+  - { url: "https://news.google.com/rss/search?q=india+carbon+market+CCTS&hl=en-IN&gl=IN&ceid=IN:en", lane: "CARBON" }
+  - { url: "https://news.google.com/rss/search?q=strait+of+hormuz+OR+red+sea+shipping&hl=en&gl=US&ceid=US:en", lane: "CHOKEPOINTS" }
 
-# Rule-based priority tagging (transparent, no AI guessing).
 priority_rules:
   critical: [hormuz, "red sea", attack, strike, missile, seiz, sanction, embargo, blockade]
-  important: [opec, outage, shutdown, maintenance, freight, tanker, refinery, export ban, windfall]
+  important: [opec, outage, shutdown, maintenance, freight, tanker, refinery, export ban, windfall, carbon]
 
-# Upcoming catalysts — maintain by hand; shown verbatim on the dashboard.
-catalysts:
-  - { when: "Check monthly", what: "OPEC+ meeting", watch: "Quota decisions vs. compliance" }
-  - { when: "Wed (US)",      what: "EIA weekly inventories", watch: "Crude + product draws" }
-  - { when: "Aug (RBI cal)", what: "RBI MPC decision", watch: "INR path, rate guidance" }
-  - { when: "Oct 2026",      what: "India CCTS compliance market opens", watch: "First CCC price prints" }
-
-# Keyword -> market impact chips shown on critical/important signals.
 impact_map:
   hormuz: ["Freight & war-risk ↑", "Brent risk premium ↑", "India import bill ↑"]
   blockade: ["Supply risk ↑", "Tanker availability ↓"]
@@ -49,12 +54,32 @@ impact_map:
   lng: ["Spot LNG reprices", "Gas-linked power costs ↑"]
   "export tax": ["Refiner margins captured by govt"]
   freight: ["Arb windows open/close", "Shipping equities move"]
+  carbon: ["CCTS compliance demand", "Industrial cost curves shift"]
 
-# Plain-English glossary shown in Learn mode.
+# CFTC Commitments of Traders (free, no key — official positioning data)
+cot_markets:
+  - { key: "WTI CRUDE",  like: "CRUDE OIL, LIGHT SWEET" }
+  - { key: "NAT GAS",    like: "NATURAL GAS" }
+  - { key: "GOLD",       like: "GOLD" }
+
+# Corridor conditions via Open-Meteo (free, no key)
+weather:
+  - { name: "HORMUZ",   lat: 26.57, lon: 56.25, tag: "tanker ops" }
+  - { name: "FUJAIRAH", lat: 25.12, lon: 56.33, tag: "bunkering hub" }
+  - { name: "MUMBAI",   lat: 19.08, lon: 72.88, tag: "power demand" }
+  - { name: "DELHI",    lat: 28.61, lon: 77.21, tag: "power demand" }
+
+catalysts:
+  - { when: "Check monthly", what: "OPEC+ meeting", watch: "Quota decisions vs. compliance" }
+  - { when: "Wed (US)",      what: "EIA weekly inventories", watch: "Crude + product draws" }
+  - { when: "Fri (US)",      what: "CFTC COT release", watch: "Managed money positioning shift" }
+  - { when: "Aug (RBI cal)", what: "RBI MPC decision", watch: "INR path, rate guidance" }
+  - { when: "Oct 2026",      what: "India CCTS compliance market opens", watch: "First CCC price prints" }
+
 glossary:
   - { term: "Risk premium", plain: "Extra price paid for the chance supply gets disrupted — not for barrels actually lost yet." }
-  - { term: "Brent–WTI spread", plain: "Global oil price minus US oil price. Widens when US crude is trapped or the world is short." }
-  - { term: "Crack spread", plain: "A refiner's margin: product price minus crude cost. India's refiners live and die by this." }
+  - { term: "Crack spread", plain: "A refiner's margin: product price minus crude cost. The diesel crack is the number Indian refiners live on." }
+  - { term: "COT / managed money", plain: "Weekly CFTC report of who holds futures positions. Extreme net length = crowded trade = fragile." }
   - { term: "War-risk insurance", plain: "Premium to insure a ship through a conflict zone. In a crisis it can exceed the freight itself." }
   - { term: "Contango", plain: "Future prices above today's — the market paying traders to store oil now and sell it later." }
-  - { term: "DXY", plain: "The dollar index. A stronger dollar usually pressures oil and EM currencies like INR." }
+  - { term: "Freight proxy", plain: "Tanker stocks (Frontline, Scorpio, DHT) move with freight rates — a free real-time stand-in for Baltic indices." }

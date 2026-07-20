@@ -1,6 +1,6 @@
-# Gulf–India Monitor
+# STRAIT
 
-Self-hosted market monitor for the Gulf–India energy corridor. One page, always live:
+STRAIT — self-hosted market intelligence for commodities and the Gulf–India energy corridor. Fragmented free data in, readable decisions out. One page, always live:
 price tape, corridor news ranked by transparent rules, a hand-maintained catalyst list, sparkline history, computed spreads, rule-based impact chips, and a Learn mode glossary.
 
 Design principles: free sources only, every record carries its source and fetch time,
@@ -97,6 +97,22 @@ priority keywords, catalysts. Edit and restart (or `curl -X POST localhost:8000/
 Spread panel (Brent–WTI, prompt spreads from the same free chain data), EIA weekly
 inventories (free API key), FRED macro series (free key), and a thesis journal with
 SQLite — in that order.
+
+
+## v4 data layer (all free)
+
+| Feed | Source | Key needed |
+|---|---|---|
+| 16-symbol grouped tape (energy, macro, freight proxies, India energy) | Yahoo Finance | No |
+| Crack spreads: diesel, gasoline, 3-2-1, Brent–WTI | Calculated from tape | No |
+| Speculative positioning (WTI, NatGas, Gold) | CFTC COT via public Socrata API | No |
+| Corridor conditions (Hormuz, Fujairah, Mumbai, Delhi) | Open-Meteo | No |
+| News lanes: maritime, freight, India energy, carbon, chokepoints | GDELT + RSS | No |
+| US weekly crude inventories | EIA v2 API | Free key (`EIA_API_KEY`) |
+
+To activate EIA: register at eia.gov/opendata, then on the server add
+`Environment=EIA_API_KEY=yourkey` under `[Service]` in `/etc/systemd/system/gim.service`,
+`systemctl daemon-reload && systemctl restart gim`.
 
 ## Put it on GitHub
 
